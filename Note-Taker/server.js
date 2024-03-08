@@ -1,9 +1,14 @@
 const express = require('express');
 const path = require('path');
 const PORT = 3001;
-const noteData = require('./Develop/db/db.json');
+const fs = require('fs');
+const noteData = require('./develop/db/db.json');
 
 const app = express();
+
+app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'develop', 'public')));
 
@@ -15,29 +20,21 @@ app.get('/notes', (req, res) => {
   res.sendFile(path.join(__dirname, '/develop/public/notes.html'))
 });
 
-
 app.get('/api/notes', (req, res) => res.json(noteData));
-console.log(noteData);
 
 app.post('/api/notes', (req, res) => {
-
   const {title, text} = req.body;
-
-  if (title && text) {
-    const newNote = {
+  const newNote = {
       title,
-      text
-    };
-
-    const response = {
-      status: 'success',
-      body: newNote,
-    };
-  } else {
-    res.status(500).json('Error in posting review');
+      text,
+      id: Math.floor(Math.random() * 10000),
   }
-});
-
+  const jsonData = fs.readFileSync(path.join(__dirname, 'develop', 'db', 'db.json'), 'utf8');
+  const notes = JSON.parse(jsonData);
+  notes.push(newNote);
+  fs.writeFileSync(path.join(__dirname, 'develop', 'db', 'db.json'), JSON.stringify(notes));
+  res.json(newNote);
+  });
 
 app.listen(PORT, () => {
   console.log(`app listening at http://localhost:${PORT}`);
