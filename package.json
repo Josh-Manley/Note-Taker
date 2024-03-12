@@ -7,7 +7,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node ./Note-Taker/server.js"
   },
   "keywords": [],
   "author": "",
