@@ -14,13 +14,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '/public/index.html'));
-});
+})
 
 app.get('/notes', (req, res) => {
   res.sendFile(path.join(__dirname, '/public/notes.html'))
-});
+})
 
-app.get('/api/notes', (req, res) => res.json(noteData));
+app.get('/api/notes', (req, res) => {
+  const jsonData = fs.readFileSync(path.join(__dirname, './db/db.json'));
+  const notes = JSON.parse(jsonData);
+  res.json(notes)
+})
 
 app.post('/api/notes', (req, res) => {
   const {title, text} = req.body;
@@ -34,19 +38,24 @@ app.post('/api/notes', (req, res) => {
   notes.push(newNote);
   fs.writeFileSync(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes));
   res.json(newNote);
-  });
+  })
 
   app.delete('/api/notes/:id', (req, res) => {
-    const noteId = parseInt(req.params.id);
-    const deleteNote = noteData.findIndex(note => note.id === noteId);
-    if (deleteNote !== -1) {
-      noteData.splice(deleteNote, 1);
-      fs.writeFileSync(path.join(__dirname, 'db', 'db.json'), JSON.stringify(noteData));
-        res.status(204).send(); // 204 No Content indicates successful deletion
-      } else {
-        res.status(404).json({ error: 'Note not found' });
-      }
-    });
+    const noteId = req.params.id;
+    const jsonData = fs.readFileSync(path.join(__dirname, './db/db.json'));
+
+    let notes = JSON.parse(jsonData);
+
+
+    notes = notes.filter(n => n.id != noteId);
+
+
+    fs.writeFileSync(path.join(__dirname, './db/db.json'), JSON.stringify(notes));
+
+    res.json("successfully deleted note");
+
+})
+
 
 app.listen(PORT, () => {
   console.log(`app listening at http://localhost:${PORT}`);
